@@ -2,6 +2,9 @@
 
 [日本語版 README](README.ja.md)
 
+This repository is using speckit-for-projects
+https://github.com/yatarousan0227/speckit-for-projects
+
 > **Turn vague project ideas into actionable plans — with AI.**
 
 VibeToDo is a local-first web app that takes your rough project concepts or daily work descriptions and transforms them into structured, executable plans. You capture the intent; the AI handles the refinement.

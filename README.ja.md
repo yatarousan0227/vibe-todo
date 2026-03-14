@@ -1,5 +1,8 @@
 # VibeToDo
 
+このリポジトリは、speckit-for-projectsを使用しています。
+https://github.com/yatarousan0227/speckit-for-projects
+
 > **ぼんやりしたアイデアを、実行できる計画に変える。**
 
 VibeToDo は、ローカル優先の Web アプリです。あなたが持つ曖昧なプロジェクト構想や日々の仕事内容を受け取り、AI と一緒に整理・精緻化して、実行可能なタスクへと変換します。
