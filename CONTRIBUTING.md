@@ -26,7 +26,7 @@ Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ```bash
 # 1. Fork and clone the repository
-git clone https://github.com/<your-fork>/vibe-todo.git
+git clone https://github.com/yatarousan0227/vibe-todo.git
 cd vibe-todo
 
 # 2. Install dependencies
