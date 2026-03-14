@@ -1,0 +1,417 @@
+screens:
+  - screen_id: SCR-004
+    screen_name: Task Synthesis - Candidate Review And Publish
+    shared_screen_ref: SCR-004
+    fields:
+      - field_id: FLD-001
+        field_name: planning_basis_status
+        label: Planning basis status
+        type: status_rail
+        area: header
+        io: output
+        required: true
+        validation:
+          - show every required artifact with `approved_current`, `missing`, or `stale` state for the active `project_id`
+          - include the same required artifact set for `project` and `daily_work`
+        default_value: null
+        source: workspace context query
+        api_mapping: artifactSummaries
+        data_mapping: ArtifactSnapshot.approval_status + ArtifactSnapshot.is_current
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: Mirrors the upstream refinement readiness contract instead of redefining task-planning prerequisites inside the screen.
+      - field_id: FLD-002
+        field_name: synthesis_eligibility_alert
+        label: Synthesis eligibility
+        type: alert_panel
+        area: header
+        io: output
+        required: true
+        validation:
+          - list missing or stale `artifact_key` values when the basis is not eligible
+          - stay empty only when every required artifact is approved and current
+        default_value: null
+        source: task synthesis readiness summary
+        api_mapping: allowedActions + staleDependencies
+        data_mapping: TaskPlanEligibilityResult
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: Prevents synthesis from starting when `DOM-002` has not produced a trustworthy planning basis.
+      - field_id: FLD-003
+        field_name: synthesize_task_plan_action
+        label: Synthesize task plan
+        type: action
+        area: header
+        io: input
+        required: false
+        validation:
+          - enabled only when the required artifact sequence is fully approved and current
+          - creates a candidate snapshot and must not replace the current published plan automatically
+        default_value: null
+        source: user action
+        api_mapping: POST /api/projects/{projectId}/task-plans with generationTrigger=synthesize
+        data_mapping: TaskPlanSnapshot.generated_from_artifact_set
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: Starts synthesis as an explicit planning step rather than a side effect of approval completion.
+      - field_id: FLD-004
+        field_name: synthesis_job_status
+        label: Synthesis job status
+        type: status_timeline
+        area: sidebar
+        io: output
+        required: true
+        validation:
+          - show at least `queued`, `running`, `failed`, `retryable`, and `completed`
+          - preserve the last published task plan when the current synthesis job fails
+        default_value: null
+        source: synthesis job feed
+        api_mapping: taskPlanSummary.jobStatus
+        data_mapping: TaskPlanSynthesisJob.status
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: Keeps long-running or provider-assisted planning transparent and retryable.
+      - field_id: FLD-005
+        field_name: task_plan_snapshot_selector
+        label: Candidate snapshot
+        type: snapshot_selector
+        area: header
+        io: input
+        required: true
+        validation:
+          - default to the latest generated candidate or stale current snapshot under review
+          - keep the current published snapshot distinguishable from unpublished candidates
+        default_value: latest_candidate
+        source: task plan snapshot history
+        api_mapping: taskPlanSnapshotId
+        data_mapping: TaskPlanSnapshot.task_plan_snapshot_id
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: Lets the user review one immutable planning result at a time.
+      - field_id: FLD-006
+        field_name: task_plan_summary
+        label: Task plan summary
+        type: summary_panel
+        area: main
+        io: output
+        required: true
+        validation:
+          - show generated_at, source artifact snapshot IDs, freshness status, and publish status
+          - identify whether placeholder values were generated for `Due Date`, `Estimate`, or `Assignee`
+        default_value: null
+        source: selected task plan snapshot
+        api_mapping: taskPlanSummary
+        data_mapping: TaskPlanSnapshot.generated_at + TaskPlanSnapshot.freshness_status
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: Makes publish readiness and snapshot provenance visible without opening a separate audit screen.
+      - field_id: FLD-007
+        field_name: task_grid
+        label: Generated tasks
+        type: task_table
+        area: main
+        io: output
+        required: true
+        validation:
+          - render every generated task with Title, Priority, Status, Due Date, Estimate, Assignee, dependency count, and publish blocker state
+          - keep row order aligned with execution-order metadata from the selected task plan snapshot
+        default_value: null
+        source: selected task plan snapshot
+        api_mapping: tasks
+        data_mapping: Task.title + Task.priority + Task.status + Task.due_date + Task.estimate + Task.assignee
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: The table is reviewable and selectable, but task creation and deletion remain out of scope for this screen.
+      - field_id: FLD-008
+        field_name: selected_task_title
+        label: Title
+        type: text
+        area: detail
+        io: input
+        required: true
+        validation:
+          - non-empty after trim
+          - updates an existing task only and must not change task identity
+        default_value: null
+        source: selected task record or user correction
+        api_mapping: taskPatch.title
+        data_mapping: Task.title
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: Title remains editable as a canonical field value, but the task cannot be replaced or split from this screen.
+      - field_id: FLD-009
+        field_name: selected_task_description
+        label: Description
+        type: textarea
+        area: detail
+        io: input
+        required: true
+        validation:
+          - non-empty after trim
+          - preserve traceability context and avoid replacing artifact links with free-form notes
+        default_value: null
+        source: selected task record or user correction
+        api_mapping: taskPatch.description
+        data_mapping: Task.description
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: Description edits stay bounded to the existing task and do not redefine the upstream planning basis.
+      - field_id: FLD-010
+        field_name: selected_task_priority
+        label: Priority
+        type: select
+        area: detail
+        io: input
+        required: true
+        validation:
+          - one of the supported task priority values
+          - must remain non-null for publish
+        default_value: null
+        source: selected task record or user correction
+        api_mapping: taskPatch.priority
+        data_mapping: Task.priority
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: Priority correction is allowed because the brief permits edits to canonical field values.
+      - field_id: FLD-011
+        field_name: selected_task_status
+        label: Status
+        type: select
+        area: detail
+        io: input
+        required: true
+        validation:
+          - one of the canonical task status values supported by the shared workspace
+          - must remain non-null for publish
+        default_value: ready
+        source: selected task record or user correction
+        api_mapping: taskPatch.status
+        data_mapping: Task.status
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: Synthesis defaults should already respect workspace compatibility before publish.
+      - field_id: FLD-012
+        field_name: selected_task_due_date
+        label: Due Date
+        type: date
+        area: detail
+        io: input
+        required: true
+        validation:
+          - non-null before publish
+          - if placeholder-generated, highlight that the user is reviewing a provisional value
+        default_value: null
+        source: selected task record or synthesis placeholder
+        api_mapping: taskPatch.dueDate
+        data_mapping: Task.due_date
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: Missing due dates are either synthesized as provisional values or block publish with an explicit reason.
+      - field_id: FLD-013
+        field_name: selected_task_dependencies
+        label: Dependencies
+        type: dependency_picker
+        area: detail
+        io: input
+        required: true
+        validation:
+          - preserve a valid task ID list within the same snapshot
+          - must not create self-dependency or remove execution-order metadata integrity
+        default_value: []
+        source: selected task record or user correction
+        api_mapping: taskPatch.dependencies
+        data_mapping: Task.dependencies
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: Dependency correction is allowed because the brief explicitly permits dependency edits before publish.
+      - field_id: FLD-014
+        field_name: selected_task_estimate
+        label: Estimate
+        type: text
+        area: detail
+        io: input
+        required: true
+        validation:
+          - non-empty before publish
+          - placeholder-generated estimates must stay reviewable until explicitly accepted or corrected
+        default_value: null
+        source: selected task record or synthesis placeholder
+        api_mapping: taskPatch.estimate
+        data_mapping: Task.estimate
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: Estimate is required for both workspace handoff and gantt readability.
+      - field_id: FLD-015
+        field_name: selected_task_assignee
+        label: Assignee
+        type: text
+        area: detail
+        io: input
+        required: true
+        validation:
+          - non-empty before publish
+          - allow synthesized placeholder values such as `self`, but require explicit display when inferred
+        default_value: self
+        source: selected task record or synthesis placeholder
+        api_mapping: taskPatch.assignee
+        data_mapping: Task.assignee
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: Keeps the single-user MVP assumption visible instead of burying it in storage defaults.
+      - field_id: FLD-016
+        field_name: selected_task_related_artifacts
+        label: Related Artifacts
+        type: traceability_panel
+        area: detail
+        io: output
+        required: true
+        validation:
+          - show at least one linked `artifact_snapshot_id`
+          - cannot be removed by pre-publish correction actions
+        default_value: null
+        source: task artifact links
+        api_mapping: tasks.relatedArtifacts
+        data_mapping: TaskArtifactLink.artifact_snapshot_id
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: The screen may explain traceability, but it never offers a destructive unlink action.
+      - field_id: FLD-017
+        field_name: save_task_correction_action
+        label: Save task correction
+        type: action
+        area: detail
+        io: input
+        required: false
+        validation:
+          - updates only canonical field values or dependencies of the selected task
+          - must reject edits that null required fields or remove all related artifact links
+        default_value: null
+        source: user action
+        api_mapping: PATCH /api/projects/{projectId}/tasks/{taskId}
+        data_mapping: Task taskPatch
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: This is the narrow edit path allowed by the brief before publish.
+      - field_id: FLD-018
+        field_name: publish_blockers
+        label: Publish blockers
+        type: blocker_list
+        area: sidebar
+        io: output
+        required: true
+        validation:
+          - enumerate tasks missing canonical required fields or unresolved synthesis reasons
+          - remain empty only when the selected snapshot is publishable
+        default_value: null
+        source: selected task plan snapshot
+        api_mapping: taskPlanSummary.publishBlockers
+        data_mapping: TaskPlanSnapshot.publish_blockers
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: Makes publish refusal explicit rather than silently disabling the primary action with no reason.
+      - field_id: FLD-019
+        field_name: publish_task_plan_action
+        label: Publish task plan
+        type: action
+        area: footer
+        io: input
+        required: false
+        validation:
+          - enabled only when the selected snapshot is still current for the same source artifact set and publish blockers are empty
+          - must explicitly mark the snapshot as the current published plan before `SCR-005` becomes editable
+        default_value: null
+        source: user action
+        api_mapping: POST /api/projects/{projectId}/task-plans with taskPlanSnapshotId and approvalDecision=publish
+        data_mapping: TaskPlanSnapshot.publish_status
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004->SCR-005
+        notes: Publish is the only transition that promotes a candidate plan into the workspace source of truth.
+  - screen_id: SCR-004-STALE
+    screen_name: Task Synthesis - Stale Current Plan Recovery
+    shared_screen_ref: SCR-004
+    fields:
+      - field_id: FLD-020
+        field_name: stale_task_plan_banner
+        label: Stale task plan status
+        type: alert_panel
+        area: header
+        io: output
+        required: true
+        validation:
+          - show stale reason, affected upstream `artifact_key`, and required next action
+          - state clearly that the current published plan is read-only until regeneration and republish complete
+        default_value: null
+        source: stale impact summary
+        api_mapping: staleDependencies
+        data_mapping: TaskPlanSnapshot.freshness_status
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: This state aligns `SCR-004` with the read-only rule consumed later by `SCR-005`.
+      - field_id: FLD-021
+        field_name: stale_source_artifact_set
+        label: Stale source artifact set
+        type: summary_panel
+        area: main
+        io: output
+        required: true
+        validation:
+          - list the previously published source artifact snapshot IDs and the newer current approved replacements
+          - identify which approvals or regenerations must be completed before a fresh task plan can publish
+        default_value: null
+        source: stale impact summary
+        api_mapping: taskPlanSummary + staleDependencies
+        data_mapping: TaskPlanSnapshot.generated_from_artifact_set
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: Helps reviewers confirm that stale is a planning-basis mismatch, not a UI-only warning.
+      - field_id: FLD-022
+        field_name: stale_task_grid
+        label: Current published tasks
+        type: task_table
+        area: main
+        io: output
+        required: true
+        validation:
+          - remain visible for reference
+          - expose read-only treatment and prevent inline task mutation while freshness is `stale`
+        default_value: null
+        source: current published task plan snapshot
+        api_mapping: tasks
+        data_mapping: Task.title + Task.status + Task.dependencies
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: The stale plan can still be reviewed, but it no longer acts as the editable planning basis.
+      - field_id: FLD-023
+        field_name: regenerate_task_plan_action
+        label: Regenerate from latest artifacts
+        type: action
+        area: footer
+        io: input
+        required: false
+        validation:
+          - enabled only when the required artifact set is again approved and current
+          - creates a new candidate snapshot instead of mutating the stale published one
+        default_value: null
+        source: user action
+        api_mapping: POST /api/projects/{projectId}/task-plans with generationTrigger=regenerate
+        data_mapping: TaskPlanSnapshot.task_plan_snapshot_id
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004
+        notes: Recovery from stale requires a fresh candidate snapshot and a new publish decision.
+      - field_id: FLD-024
+        field_name: workspace_handoff_state
+        label: Workspace handoff state
+        type: state_panel
+        area: sidebar
+        io: output
+        required: true
+        validation:
+          - show `read_only` while the current published plan is stale
+          - switch to `editable` only after a new snapshot is published
+        default_value: read_only
+        source: current published task plan state
+        api_mapping: taskPlanSummary.allowedActions
+        data_mapping: TaskPlanSnapshot.freshness_status + TaskPlanSnapshot.publish_status
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004->SCR-005
+        notes: Carries the shared screen catalog handoff rule into the downstream management workspace contract.

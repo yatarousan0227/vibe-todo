@@ -1,0 +1,21 @@
+screens:
+  - screen_id: SCR-001
+    screen_name: <screen name>
+    shared_screen_ref: <CD-UI-001 screen entry or `none`>
+    fields:
+      - field_id: FLD-001
+        field_name: <field name>
+        label: <label>
+        type: text
+        area: main
+        io: input
+        required: true
+        validation:
+          - <validation rule>
+        default_value: null
+        source: <source system or input>
+        api_mapping: <api field>
+        data_mapping: <data field>
+        navigation_rule_refs:
+          - <CD-UI-002 rule id or `none`>
+        notes: <notes>

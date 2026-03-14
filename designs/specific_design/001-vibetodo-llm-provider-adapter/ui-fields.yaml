@@ -1,0 +1,120 @@
+# ui-fields.yaml
+# 本設計はユーザー向け UI 画面を持たないインフラストラクチャ層である。
+# 設定インターフェースは環境変数スキーマとして定義し、開発者が .env ファイルで管理する。
+# CD-UI-001 の SCR-001〜SCR-005 は LLM 呼び出しを内部で行うが、それらの画面は
+# 各 specific design bundle で定義する。本バンドルは adapter port の契約を定義する。
+
+brief_id: 005-vibetodo-llm-provider-adapter
+design_id: 001-vibetodo-llm-provider-adapter
+ui_applicable: false
+ui_applicable_reason: "本設計はユーザー向け画面を持たない。設定インターフェースは環境変数スキーマ (REQ-005) として定義し、開発者が .env ファイルで管理する。SCR-002 Refinement Loop が LLM 呼び出しをトリガーするが、その画面定義は 002-vibetodo-spec-refinement-workbench の specific design bundle に委ねる。"
+
+configuration_interfaces:
+  - config_id: CFG-001
+    config_name: LLM Provider Selection
+    source: environment variable
+    fields:
+      - field_id: CFG-001-F001
+        var_name: LLM_PROVIDER
+        label: LLM プロバイダー選択
+        type: enum
+        required: true
+        allowed_values:
+          - openai
+          - anthropic
+          - azure_openai
+        default_value: null
+        notes: "起動時必須。未設定または無効値の場合は起動を中断してエラーを出す。"
+
+  - config_id: CFG-002
+    config_name: OpenAI Provider Configuration
+    source: environment variable
+    applicable_when: "LLM_PROVIDER=openai"
+    fields:
+      - field_id: CFG-002-F001
+        var_name: OPENAI_API_KEY
+        label: OpenAI API キー
+        type: secret
+        required: true
+        default_value: null
+        notes: "OpenAI API キー。ソースコードにハードコードしてはならない。"
+      - field_id: CFG-002-F002
+        var_name: OPENAI_MODEL
+        label: OpenAI モデル名
+        type: string
+        required: true
+        default_value: null
+        example: "gpt-4o"
+        notes: "呼び出すモデル識別子。"
+      - field_id: CFG-002-F003
+        var_name: OPENAI_API_BASE_URL
+        label: OpenAI ベース URL（省略可）
+        type: url
+        required: false
+        default_value: "https://api.openai.com/v1"
+        notes: "省略時は OpenAI 公式エンドポイントを使用。ローカル proxy や互換 API の場合に設定する。"
+
+  - config_id: CFG-003
+    config_name: Anthropic Provider Configuration
+    source: environment variable
+    applicable_when: "LLM_PROVIDER=anthropic"
+    fields:
+      - field_id: CFG-003-F001
+        var_name: ANTHROPIC_API_KEY
+        label: Anthropic API キー
+        type: secret
+        required: true
+        default_value: null
+        notes: "Anthropic API キー。ソースコードにハードコードしてはならない。"
+      - field_id: CFG-003-F002
+        var_name: ANTHROPIC_MODEL
+        label: Anthropic モデル名
+        type: string
+        required: true
+        default_value: null
+        example: "claude-sonnet-4-6"
+        notes: "呼び出すモデル識別子。"
+      - field_id: CFG-003-F003
+        var_name: ANTHROPIC_API_BASE_URL
+        label: Anthropic ベース URL（省略可）
+        type: url
+        required: false
+        default_value: "https://api.anthropic.com"
+        notes: "省略時は Anthropic 公式エンドポイントを使用。"
+
+  - config_id: CFG-004
+    config_name: Azure OpenAI Provider Configuration
+    source: environment variable
+    applicable_when: "LLM_PROVIDER=azure_openai"
+    fields:
+      - field_id: CFG-004-F001
+        var_name: AZURE_OPENAI_API_KEY
+        label: Azure OpenAI API キー
+        type: secret
+        required: true
+        default_value: null
+        notes: "Azure OpenAI リソースの API キー。"
+      - field_id: CFG-004-F002
+        var_name: AZURE_OPENAI_ENDPOINT
+        label: Azure OpenAI エンドポイント
+        type: url
+        required: true
+        default_value: null
+        example: "https://my-resource.openai.azure.com"
+        notes: "Azure OpenAI リソースのエンドポイント URL。"
+      - field_id: CFG-004-F003
+        var_name: AZURE_OPENAI_DEPLOYMENT_NAME
+        label: Azure OpenAI デプロイメント名
+        type: string
+        required: true
+        default_value: null
+        example: "gpt-4o-deployment"
+        notes: "Azure ポータルで設定したデプロイメント名。"
+      - field_id: CFG-004-F004
+        var_name: AZURE_OPENAI_API_VERSION
+        label: Azure OpenAI API バージョン
+        type: string
+        required: true
+        default_value: null
+        example: "2024-02-01"
+        notes: "Azure OpenAI API のバージョン文字列。"

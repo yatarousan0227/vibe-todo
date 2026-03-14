@@ -1,0 +1,31 @@
+brief_id: 004-vibetodo-management-workspace
+design_id: 004-vibetodo-management-workspace
+common_design_refs:
+  - ref_id: CD-DATA-001
+    kind: data
+    usage: consume
+    notes:
+      - Read only the current published `TaskPlanSnapshot` and its `Task` records as the editable execution basis.
+      - Preserve `TaskArtifactLink` references in task detail and on every task mutation so related artifact context never disappears.
+      - Treat `TaskPlanSnapshot.freshness_status` as the single stale/read-only switch for kanban, gantt, and detail editing.
+  - ref_id: CD-API-001
+    kind: api
+    usage: consume
+    notes:
+      - Use `GET /api/projects/{projectId}/workspace-context` to hydrate board counts, gantt metadata, artifact health, stale reason, and allowed actions in one response.
+      - Use `PATCH /api/projects/{projectId}/tasks/{taskId}` for partial task updates, constrained to canonical task fields and existing traceability links.
+      - Reuse shared lifecycle response fields so the workspace can distinguish current, stale, blocked, and empty-plan states without screen-local rules.
+  - ref_id: CD-MOD-001
+    kind: module
+    usage: consume
+    notes:
+      - Delegate `UpdateTask` freshness validation and traceability preservation to the shared planning application module.
+      - Use the module's `ReturnExecutionFeedbackToRefinement` capability to construct a transient handoff context instead of persisting a workspace-owned feedback record.
+      - Keep extension points for future management tools behind the same workspace-context contract rather than introducing view-specific orchestration modules.
+  - ref_id: CD-UI-001
+    kind: ui
+    usage: consume
+    notes:
+      - Reuse `SCR-005 Management Workspace` as the single execution screen; kanban and gantt are tabs inside one workspace shell, not separate screens.
+      - Preserve the shared navigation rule that execution feedback loops from `SCR-005` back to `SCR-002`.
+      - Keep `SCR-004 -> SCR-005` as the publish boundary; the workspace never presents unpublished task plans as editable.

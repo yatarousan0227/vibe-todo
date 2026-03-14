@@ -1,0 +1,32 @@
+brief_id: 003-vibetodo-task-plan-synthesis
+design_id: 003-vibetodo-task-plan-synthesis
+common_design_refs:
+  - ref_id: CD-DATA-001
+    kind: data
+    usage: consume
+    notes:
+      - Persist each synthesis result as an immutable `TaskPlanSnapshot` with `generated_at`, `generated_from_artifact_set`, and `freshness_status`.
+      - Persist every generated task with the canonical task shape and at least one `TaskArtifactLink` so `Related Artifacts` is always derivable from snapshot data.
+      - Distinguish candidate snapshots from the current published snapshot without breaking the shared freshness semantics consumed by `SCR-005`.
+  - ref_id: CD-API-001
+    kind: api
+    usage: consume
+    notes:
+      - Use `GET /api/projects/{projectId}/workspace-context` to load approved artifact readiness, the latest published task plan, candidate snapshot summaries, and stale impact for `SCR-004`.
+      - Use `POST /api/projects/{projectId}/task-plans` with `generationTrigger=synthesize` or `generationTrigger=regenerate` to create a candidate task plan from the current approved artifact set.
+      - Use `PATCH /api/projects/{projectId}/tasks/{taskId}` for pre-publish corrections that change canonical field values or dependencies without deleting the task or its traceability links.
+      - Use `POST /api/projects/{projectId}/task-plans` with `taskPlanSnapshotId` and `approvalDecision=publish` to promote one reviewed snapshot into the current published plan.
+  - ref_id: CD-MOD-001
+    kind: module
+    usage: consume
+    notes:
+      - Delegate artifact-set eligibility checks, placeholder generation policy, publish blocker detection, and stale propagation to the shared project planning application module.
+      - Treat the task synthesis engine and persistence adapters as replaceable collaborators behind domain-defined ports such as `TaskPlanRepository` and `TaskSynthesisEngine`.
+      - Keep publish as a module-owned decision boundary so the UI never auto-promotes a generated candidate into the workspace source of truth.
+  - ref_id: CD-UI-001
+    kind: ui
+    usage: consume
+    notes:
+      - Reuse `SCR-004 Task Synthesis` as the only screen where candidate task plans are reviewed, corrected, and explicitly published.
+      - Preserve the shared navigation rule that `SCR-005 Management Workspace` opens as an editable surface only after publish succeeds.
+      - Surface stale source-artifact mismatches inside `SCR-004` so `SCR-005` can consume the same read-only rule instead of inventing a second stale policy.

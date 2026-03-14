@@ -1,0 +1,1 @@
+:root{color-scheme:light;--ui-storybook-bg: #f5f7fb;--ui-storybook-text: #172033;--ui-storybook-muted: #627086}html,body,#storybook-root{min-height:100%}body{margin:0;background:linear-gradient(180deg,#ffffff 0%,var(--ui-storybook-bg) 100%);color:var(--ui-storybook-text);font-family:Helvetica Neue,Helvetica,Arial,sans-serif}

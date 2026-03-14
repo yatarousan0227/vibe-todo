@@ -1,0 +1,374 @@
+screens:
+  - screen_id: SCR-005
+    screen_name: Management Workspace - Current Published Plan
+    shared_screen_ref: SCR-005
+    fields:
+      - field_id: FLD-001
+        field_name: workspace_header_summary
+        label: Workspace summary
+        type: summary_panel
+        area: header
+        io: output
+        required: true
+        validation:
+          - show `project_id`, current published `task_plan_snapshot_id`, and `freshness_status`
+          - must reflect only the current published plan, not draft or previous snapshots
+        default_value: null
+        source: workspace context query
+        api_mapping: project + taskPlanSummary
+        data_mapping: Project.project_id + TaskPlanSnapshot.task_plan_snapshot_id
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004->SCR-005
+        notes: Establishes the source-of-truth boundary inherited from `SCR-004`.
+      - field_id: FLD-002
+        field_name: management_view_switcher
+        label: Management view
+        type: segmented_control
+        area: header
+        io: input
+        required: true
+        validation:
+          - one of `kanban` or `gantt`
+          - switching view must not trigger a second planning calculation
+        default_value: kanban
+        source: user action
+        api_mapping: none
+        data_mapping: local_view_state.current_view
+        navigation_rule_refs:
+          - CD-UI-001/SCR-005
+        notes: Both options render the same canonical task data with different visual projections.
+      - field_id: FLD-003
+        field_name: artifact_health_panel
+        label: Artifact health
+        type: status_panel
+        area: sidebar
+        io: output
+        required: true
+        validation:
+          - show stale reason, affected artifacts, and current actionability state
+          - must remain visible in both kanban and gantt views
+        default_value: null
+        source: workspace context query
+        api_mapping: staleDependencies + artifactSummaries
+        data_mapping: ArtifactSnapshot summary set
+        navigation_rule_refs:
+          - CD-UI-001/SCR-005->SCR-002
+        notes: Provides the execution-to-refinement bridge without leaving the management shell.
+      - field_id: FLD-004
+        field_name: kanban_board
+        label: Kanban board
+        type: kanban_board
+        area: main
+        io: output
+        required: true
+        validation:
+          - render fixed columns `backlog`, `ready`, `in_progress`, `blocked`, `done`
+          - include all tasks from the current published plan exactly once
+        default_value: null
+        source: workspace context query
+        api_mapping: tasks
+        data_mapping: Task.status grouped by enum
+        navigation_rule_refs:
+          - CD-UI-001/SCR-005
+        notes: The board is the primary editing entry point for task status changes while the plan is current.
+      - field_id: FLD-005
+        field_name: gantt_chart
+        label: Gantt chart
+        type: gantt_chart
+        area: main
+        io: output
+        required: true
+        validation:
+          - show `Due Date`, `Estimate`, `Dependencies`, and execution-order metadata for every current task
+          - remain read-only even when the plan is current
+        default_value: null
+        source: workspace context query
+        api_mapping: tasks + taskPlanSummary.executionOrder
+        data_mapping: Task.due_date + Task.estimate + Task.dependencies
+        navigation_rule_refs:
+          - CD-UI-001/SCR-005
+        notes: Visualizes schedule impact and blocked relationships without introducing direct timeline editing.
+      - field_id: FLD-006
+        field_name: open_task_detail_action
+        label: Open task detail
+        type: action
+        area: main
+        io: input
+        required: false
+        validation:
+          - available from both kanban cards and gantt rows
+          - must resolve to one canonical `task_id`
+        default_value: null
+        source: user action
+        api_mapping: none
+        data_mapping: Task.task_id
+        navigation_rule_refs:
+          - CD-UI-001/SCR-005
+        notes: Avoids separate detail records by anchoring the drawer to the selected canonical task.
+  - screen_id: SCR-005-DETAIL
+    screen_name: Management Workspace - Task Detail Drawer
+    shared_screen_ref: SCR-005
+    fields:
+      - field_id: FLD-007
+        field_name: task_status
+        label: Status
+        type: select
+        area: drawer
+        io: input
+        required: true
+        validation:
+          - one of `backlog`, `ready`, `in_progress`, `blocked`, `done`
+          - editable only when `TaskPlanSnapshot.freshness_status=current`
+        default_value: null
+        source: selected task
+        api_mapping: taskPatch.status
+        data_mapping: Task.status
+        navigation_rule_refs:
+          - CD-UI-001/SCR-005
+        notes: Status updates must synchronize back to both kanban and gantt indicators after save.
+      - field_id: FLD-008
+        field_name: task_description
+        label: Description
+        type: textarea
+        area: drawer
+        io: input
+        required: true
+        validation:
+          - non-empty after trim
+          - editable only when the plan is current
+        default_value: null
+        source: selected task
+        api_mapping: taskPatch.description
+        data_mapping: Task.description
+        navigation_rule_refs:
+          - CD-UI-001/SCR-005
+        notes: Supports execution-time clarification without changing task identity.
+      - field_id: FLD-009
+        field_name: task_priority
+        label: Priority
+        type: select
+        area: drawer
+        io: input
+        required: true
+        validation:
+          - non-null canonical priority value
+          - editable only when the plan is current
+        default_value: null
+        source: selected task
+        api_mapping: taskPatch.priority
+        data_mapping: Task.priority
+        navigation_rule_refs:
+          - CD-UI-001/SCR-005
+        notes: Priority edits affect both board triage and gantt emphasis markers.
+      - field_id: FLD-010
+        field_name: task_due_date
+        label: Due date
+        type: date
+        area: drawer
+        io: input
+        required: true
+        validation:
+          - non-null ISO date
+          - editable only when the plan is current
+        default_value: null
+        source: selected task
+        api_mapping: taskPatch.dueDate
+        data_mapping: Task.due_date
+        navigation_rule_refs:
+          - CD-UI-001/SCR-005
+        notes: Changes update the gantt bar projection and lateness indicators immediately after save.
+      - field_id: FLD-011
+        field_name: task_dependencies
+        label: Dependencies
+        type: token_list
+        area: drawer
+        io: input
+        required: true
+        validation:
+          - each dependency must resolve to another task in the same current plan
+          - editable only when the plan is current
+        default_value: null
+        source: selected task
+        api_mapping: taskPatch.dependencies
+        data_mapping: Task.dependencies
+        navigation_rule_refs:
+          - CD-UI-001/SCR-005
+        notes: Dependency edits must preserve task IDs so gantt and blocked-state calculations stay consistent.
+      - field_id: FLD-012
+        field_name: task_estimate
+        label: Estimate
+        type: text
+        area: drawer
+        io: input
+        required: true
+        validation:
+          - non-empty estimate string
+          - editable only when the plan is current
+        default_value: null
+        source: selected task
+        api_mapping: taskPatch.estimate
+        data_mapping: Task.estimate
+        navigation_rule_refs:
+          - CD-UI-001/SCR-005
+        notes: Remains text-based in the canonical task shape while still informing gantt duration display.
+      - field_id: FLD-013
+        field_name: task_assignee
+        label: Assignee
+        type: text
+        area: drawer
+        io: input
+        required: true
+        validation:
+          - non-empty string
+          - default to `self` on first publish for single-user MVP
+        default_value: self
+        source: selected task
+        api_mapping: taskPatch.assignee
+        data_mapping: Task.assignee
+        navigation_rule_refs:
+          - CD-UI-001/SCR-005
+        notes: Preserves single-user MVP semantics while allowing explicit renaming.
+      - field_id: FLD-014
+        field_name: related_artifacts
+        label: Related artifacts
+        type: reference_list
+        area: drawer
+        io: output
+        required: true
+        validation:
+          - show at least one `artifact_snapshot_id` link for the selected task
+          - must not disappear after any task update
+        default_value: null
+        source: selected task
+        api_mapping: tasks.relatedArtifacts
+        data_mapping: TaskArtifactLink.artifact_snapshot_id
+        navigation_rule_refs:
+          - CD-UI-001/SCR-005->SCR-002
+        notes: Serves as evidence and as the starting point for refinement feedback context.
+      - field_id: FLD-015
+        field_name: save_task_action
+        label: Save task update
+        type: action
+        area: drawer
+        io: input
+        required: false
+        validation:
+          - disabled when `freshness_status=stale`
+          - send only allowed canonical field patches and preserve related artifacts
+        default_value: null
+        source: user action
+        api_mapping: PATCH /api/projects/{projectId}/tasks/{taskId}
+        data_mapping: Task
+        navigation_rule_refs:
+          - CD-UI-001/SCR-005
+        notes: Successful save must refresh board, gantt, and detail views from the same response.
+      - field_id: FLD-016
+        field_name: send_feedback_action
+        label: Return to refinement
+        type: action
+        area: drawer
+        io: input
+        required: false
+        validation:
+          - requires `project_id`, `task_id`, one `artifact_snapshot_id`, and user-entered feedback note
+          - must not create a workspace-owned feedback persistence record
+        default_value: null
+        source: user action
+        api_mapping: none
+        data_mapping: transient_feedback_handoff
+        navigation_rule_refs:
+          - CD-UI-001/SCR-005->SCR-002
+        notes: Opens `SCR-002` with execution feedback context for targeted re-refinement.
+  - screen_id: SCR-005-READONLY
+    screen_name: Management Workspace - Stale Read-Only State
+    shared_screen_ref: SCR-005
+    fields:
+      - field_id: FLD-017
+        field_name: stale_reason_banner
+        label: Stale reason
+        type: alert_panel
+        area: header
+        io: output
+        required: true
+        validation:
+          - show the upstream artifact or task-plan cause of staleness
+          - pair stale status text with the blocked action state
+        default_value: null
+        source: workspace context query
+        api_mapping: staleDependencies + allowedActions
+        data_mapping: TaskPlanSnapshot.freshness_status
+        navigation_rule_refs:
+          - CD-UI-001/SCR-005->SCR-002
+        notes: Converts the entire workspace into read-only mode while keeping situational awareness visible.
+      - field_id: FLD-018
+        field_name: read_only_task_views
+        label: Read-only board and timeline
+        type: mixed_projection
+        area: main
+        io: output
+        required: true
+        validation:
+          - preserve board and gantt visibility even while edits are disabled
+          - clearly mark all mutation controls as unavailable
+        default_value: null
+        source: workspace context query
+        api_mapping: tasks + allowedActions
+        data_mapping: Task + TaskPlanSnapshot.freshness_status
+        navigation_rule_refs:
+          - CD-UI-001/SCR-005
+        notes: Supports inspection and replanning conversations without pretending the stale plan is still current.
+      - field_id: FLD-019
+        field_name: reopen_refinement_action
+        label: Reopen refinement
+        type: action
+        area: sidebar
+        io: input
+        required: false
+        validation:
+          - enabled when a stale reason identifies at least one upstream artifact or feedback target
+          - routes to `SCR-002` with enough context to continue refinement
+        default_value: null
+        source: user action
+        api_mapping: none
+        data_mapping: transient_feedback_handoff
+        navigation_rule_refs:
+          - CD-UI-001/SCR-005->SCR-002
+        notes: Becomes the primary next step once editing is blocked.
+  - screen_id: SCR-005-EMPTY
+    screen_name: Management Workspace - No Published Plan
+    shared_screen_ref: SCR-005
+    fields:
+      - field_id: FLD-020
+        field_name: empty_state_message
+        label: Empty plan state
+        type: empty_state
+        area: main
+        io: output
+        required: true
+        validation:
+          - explain that no current published task plan exists
+          - distinguish this state from stale or loading states
+        default_value: null
+        source: workspace context query
+        api_mapping: taskPlanSummary
+        data_mapping: TaskPlanSnapshot current published presence
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004->SCR-005
+        notes: Ensures the management workspace does not fabricate a board from unpublished or absent task plans.
+      - field_id: FLD-021
+        field_name: open_task_synthesis_action
+        label: Open task synthesis
+        type: action
+        area: main
+        io: input
+        required: false
+        validation:
+          - available only when `SCR-004` can be resumed for the same `project_id`
+          - routes the user back to the publish boundary instead of creating tasks locally
+        default_value: null
+        source: user action
+        api_mapping: none
+        data_mapping: navigation.project_id
+        navigation_rule_refs:
+          - CD-UI-001/SCR-004->SCR-005
+        notes: Preserves the rule that publish happens in `SCR-004`, not in the workspace.

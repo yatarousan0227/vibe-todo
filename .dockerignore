@@ -1,0 +1,12 @@
+.git
+.next
+.agents
+.claude
+.codex
+.specify
+briefs
+designs
+node_modules
+npm-debug.log
+coverage
+.DS_Store

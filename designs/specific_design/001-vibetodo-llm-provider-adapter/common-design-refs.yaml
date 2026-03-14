@@ -1,0 +1,17 @@
+brief_id: 005-vibetodo-llm-provider-adapter
+design_id: 001-vibetodo-llm-provider-adapter
+common_design_refs:
+  - ref_id: CD-API-001
+    kind: api
+    usage: consume
+    notes:
+      - API 不変条件「provider 固有情報は request/response の必須契約に含めない」を adapter 境界で実現する。OpenAI・Anthropic・Azure OpenAI それぞれの SDK 固有型・ヘッダー・ペイロード差異は adapter 内に閉じ、`LLMProvider` ポートの contract には一切露出しない
+      - CD-API-001 が定義する `POST /api/projects/{projectId}/artifacts/{artifactKey}/generations` などの endpoint が内部で LLM を呼び出す際、呼び出し先 provider の詳細を API response に含めない設計と整合する
+  - ref_id: CD-MOD-001
+    kind: module
+    usage: implement
+    notes:
+      - CD-MOD-001 が定義する `LLMProvider` コラボレーター境界を本設計で具体実装する
+      - `ProjectPlanningApplicationModule` は `LLMProvider` ポートインターフェースにのみ依存し、`OpenAILLMAdapter` 等の具象クラスを直接 import してはならない
+      - `RefinementEngine` コラボレーターが `generateText` を呼び出す際、本設計の factory が起動時に生成した adapter インスタンスを DI 経由で受け取る
+      - adapter 追加・変更は `LLMProvider` インターフェースを満たせばよく、module 本体の実装変更を必要としない

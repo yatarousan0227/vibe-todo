@@ -1,0 +1,332 @@
+screens:
+  - screen_id: SCR-002
+    screen_name: Refinement Loop - Artifact Workspace
+    shared_screen_ref: SCR-002
+    fields:
+      - field_id: FLD-001
+        field_name: active_artifact_key
+        label: Active artifact
+        type: sequence_selector
+        area: header
+        io: input
+        required: true
+        validation:
+          - one of `objective_and_outcome`, `background_and_current_situation`, `scope_and_non_scope`, `constraints_and_conditions`, `stakeholders_and_roles`, `deliverables_and_milestones`, `work_breakdown`, or `risks_assumptions_and_open_questions`
+          - next artifact is disabled until the current artifact has an approved and current snapshot
+        default_value: objective_and_outcome
+        source: RefinementSession.active_artifact_key
+        api_mapping: artifactKey
+        data_mapping: RefinementSession.active_artifact_key
+        navigation_rule_refs:
+          - CD-UI-001/SCR-002
+        notes: Mirrors the shared screen catalog rule that the refinement loop owns artifact progression and cannot bypass approval gating.
+      - field_id: FLD-002
+        field_name: artifact_sequence_status
+        label: Artifact sequence status
+        type: progress_rail
+        area: header
+        io: output
+        required: true
+        validation:
+          - show each required artifact with `draft`, `approved`, `stale`, or `blocked` status
+          - reflect the same ordering for `project` and `daily_work`
+        default_value: null
+        source: workspace context query
+        api_mapping: artifactSummaries
+        data_mapping: ArtifactSnapshot.approval_status
+        navigation_rule_refs:
+          - CD-UI-001/SCR-002
+        notes: Communicates the canonical artifact sequence from the architecture principles without embedding alternate screen-local ordering.
+      - field_id: FLD-003
+        field_name: current_draft_body
+        label: Current artifact draft
+        type: document_editor
+        area: main
+        io: input
+        required: true
+        validation:
+          - editor opens only for the selected `artifact_key`
+          - chat responses must not write into this field until the user triggers generate, regenerate, or edit save
+        default_value: null
+        source: current snapshot or user edit buffer
+        api_mapping: artifactSnapshot.body
+        data_mapping: ArtifactSnapshot.body
+        navigation_rule_refs:
+          - CD-UI-001/SCR-002
+        notes: Stores explicit user edits as first-class draft state before approval.
+      - field_id: FLD-004
+        field_name: upstream_context_panel
+        label: Approved upstream context
+        type: context_panel
+        area: sidebar
+        io: output
+        required: true
+        validation:
+          - include only current approved upstream artifact snapshots for the same `project_id`
+          - exclude unrelated projects and stale downstream artifacts
+        default_value: null
+        source: workspace context query
+        api_mapping: workspaceContextIncludes=approved_upstream_artifacts
+        data_mapping: ArtifactSnapshot.project_id + ArtifactSnapshot.approval_status
+        navigation_rule_refs:
+          - CD-UI-001/SCR-002
+        notes: Makes the context-bound conversation rule visible to the user.
+      - field_id: FLD-005
+        field_name: ai_prompt_input
+        label: Refinement prompt
+        type: textarea
+        area: sidebar
+        io: input
+        required: false
+        validation:
+          - reject prompts that ask for general-purpose assistance outside the active project and artifact scope
+          - preserve the current draft until an explicit generation action succeeds
+        default_value: null
+        source: user input
+        api_mapping: generationPrompt
+        data_mapping: RefinementSession.last_prompt
+        navigation_rule_refs:
+          - CD-UI-001/SCR-002
+        notes: The prompt box is an artifact-scoped instruction surface, not a general chat product.
+      - field_id: FLD-006
+        field_name: generation_job_status
+        label: Generation job status
+        type: status_timeline
+        area: sidebar
+        io: output
+        required: true
+        validation:
+          - show at least `queued`, `running`, `failed`, `retryable`, and `completed`
+          - retain current approved snapshot when the latest job fails
+        default_value: null
+        source: generation job feed
+        api_mapping: artifactGenerationResult.jobStatus
+        data_mapping: ArtifactGenerationJob.status
+        navigation_rule_refs:
+          - CD-UI-001/SCR-002
+        notes: Supports long-running AI operations without hiding retry state.
+      - field_id: FLD-007
+        field_name: generate_draft_action
+        label: Generate draft
+        type: action
+        area: footer
+        io: input
+        required: false
+        validation:
+          - enabled when upstream approvals satisfy the selected artifact's prerequisites
+          - creates a new immutable snapshot candidate instead of mutating the last approved snapshot in place
+        default_value: null
+        source: user action
+        api_mapping: POST /api/projects/{projectId}/artifacts/{artifactKey}/generations
+        data_mapping: ArtifactSnapshot.version_number
+        navigation_rule_refs:
+          - CD-UI-001/SCR-002
+        notes: Used for first draft creation or explicit new draft generation.
+      - field_id: FLD-008
+        field_name: regenerate_draft_action
+        label: Regenerate draft
+        type: action
+        area: footer
+        io: input
+        required: false
+        validation:
+          - requires an existing current or previous snapshot to diff against
+          - must record the regeneration reason alongside the new snapshot
+        default_value: null
+        source: user action
+        api_mapping: generationTrigger=regenerate
+        data_mapping: ArtifactSnapshot.change_reason
+        navigation_rule_refs:
+          - CD-UI-001/SCR-002
+        notes: Explicit regeneration keeps the audit trail intact and avoids silent replacement of user content.
+      - field_id: FLD-009
+        field_name: change_reason_summary
+        label: Change reason summary
+        type: summary_panel
+        area: main
+        io: output
+        required: true
+        validation:
+          - show why the current snapshot differs from the previous snapshot
+          - identify whether the change came from generate, regenerate, or user edit
+        default_value: null
+        source: current snapshot metadata
+        api_mapping: artifactSnapshot.changeReason
+        data_mapping: ArtifactSnapshot.change_reason
+        navigation_rule_refs:
+          - CD-UI-001/SCR-002
+        notes: Surfaces audit context before the user crosses the approval boundary.
+      - field_id: FLD-010
+        field_name: stale_impact_summary
+        label: Stale downstream impact
+        type: alert_panel
+        area: main
+        io: output
+        required: true
+        validation:
+          - list downstream artifacts and task plan snapshots that become stale when the current artifact changes
+          - remain empty only when no downstream work exists yet
+        default_value: null
+        source: stale impact summary
+        api_mapping: staleDependencies
+        data_mapping: ArtifactStaleImpactSummary
+        navigation_rule_refs:
+          - CD-UI-001/SCR-002
+        notes: Prepares the user for cross-domain review with task synthesis and workspace briefs.
+      - field_id: FLD-011
+        field_name: open_approval_action
+        label: Review for approval
+        type: action
+        area: footer
+        io: input
+        required: false
+        validation:
+          - enabled only when a current snapshot candidate exists
+          - routes to `SCR-003` without auto-approving
+        default_value: null
+        source: user action
+        api_mapping: none
+        data_mapping: RefinementSession.active_artifact_key
+        navigation_rule_refs:
+          - CD-UI-001/SCR-002->SCR-003
+        notes: Preserves the shared screen responsibility split between refinement and approval.
+  - screen_id: SCR-003
+    screen_name: Artifact Approval - Review Boundary
+    shared_screen_ref: SCR-003
+    fields:
+      - field_id: FLD-012
+        field_name: snapshot_selector
+        label: Snapshot under review
+        type: snapshot_selector
+        area: header
+        io: input
+        required: true
+        validation:
+          - allow review only for the selected artifact within the current `project_id`
+          - default to the latest current snapshot candidate
+        default_value: current
+        source: snapshot history
+        api_mapping: artifactSnapshotId
+        data_mapping: ArtifactSnapshot.artifact_snapshot_id
+        navigation_rule_refs:
+          - CD-UI-001/SCR-003
+        notes: Keeps approval attached to one immutable snapshot at a time.
+      - field_id: FLD-013
+        field_name: current_vs_previous_diff
+        label: Current vs previous diff
+        type: diff_panel
+        area: main
+        io: output
+        required: true
+        validation:
+          - compare the selected current snapshot to the immediately previous snapshot
+          - highlight inserted, removed, and edited sections without hiding unchanged anchors
+        default_value: null
+        source: diff query
+        api_mapping: artifactSnapshot.diffFromPrevious
+        data_mapping: ArtifactSnapshot.diff_payload
+        navigation_rule_refs:
+          - CD-UI-001/SCR-003
+        notes: Core evidence for explicit approve or reject decisions.
+      - field_id: FLD-014
+        field_name: change_reason_display
+        label: Change reason
+        type: summary_panel
+        area: main
+        io: output
+        required: true
+        validation:
+          - show generation reason, user edit note, or rejection follow-up rationale
+          - remain linked to the selected snapshot
+        default_value: null
+        source: snapshot metadata
+        api_mapping: artifactSnapshot.changeReason
+        data_mapping: ArtifactSnapshot.change_reason
+        navigation_rule_refs:
+          - CD-UI-001/SCR-003
+        notes: Prevents approvals based only on visual diff without rationale.
+      - field_id: FLD-015
+        field_name: approval_history
+        label: Approval history
+        type: audit_timeline
+        area: sidebar
+        io: output
+        required: true
+        validation:
+          - show decision, decision maker, timestamp, and decision reason for prior approvals or rejections
+          - remain readable even when the current snapshot has not been decided yet
+        default_value: null
+        source: audit log
+        api_mapping: auditMeta
+        data_mapping: ArtifactApprovalAudit
+        navigation_rule_refs:
+          - CD-UI-001/SCR-003
+        notes: Carries the immutable audit requirement into the approval screen.
+      - field_id: FLD-016
+        field_name: stale_downstream_impact
+        label: Downstream stale impact
+        type: impact_list
+        area: sidebar
+        io: output
+        required: true
+        validation:
+          - name affected downstream artifacts and the latest task plan snapshot
+          - show required follow-up action such as regenerate or re-approve
+        default_value: null
+        source: stale impact summary
+        api_mapping: staleDependencies
+        data_mapping: ArtifactStaleImpactSummary
+        navigation_rule_refs:
+          - CD-UI-001/SCR-003
+        notes: Makes the cross-domain effect explicit before the user confirms a decision.
+      - field_id: FLD-017
+        field_name: approve_action
+        label: Approve snapshot
+        type: action
+        area: footer
+        io: input
+        required: false
+        validation:
+          - requires an explicit decision reason
+          - sets the selected snapshot as approved and current for the artifact key
+        default_value: null
+        source: user action
+        api_mapping: POST /api/projects/{projectId}/artifacts/{artifactKey}/approvals
+        data_mapping: ArtifactSnapshot.approval_status
+        navigation_rule_refs:
+          - CD-UI-001/SCR-003
+        notes: Approval is the only action that unlocks the next artifact or task synthesis readiness.
+      - field_id: FLD-018
+        field_name: reject_action
+        label: Reject snapshot
+        type: action
+        area: footer
+        io: input
+        required: false
+        validation:
+          - requires an explicit rejection reason
+          - preserves the last approved snapshot if one exists
+        default_value: null
+        source: user action
+        api_mapping: approvalDecision=reject
+        data_mapping: ArtifactApprovalAudit.decision_reason
+        navigation_rule_refs:
+          - CD-UI-001/SCR-003->SCR-002
+        notes: Rejection returns the user to refinement without falsifying the current approved baseline.
+      - field_id: FLD-019
+        field_name: readiness_gate_summary
+        label: Task synthesis readiness
+        type: readiness_panel
+        area: footer
+        io: output
+        required: true
+        validation:
+          - indicate `ready` only when every required artifact is approved and current
+          - list unapproved or stale artifacts that still block `SCR-004`
+        default_value: blocked
+        source: readiness summary
+        api_mapping: allowedActions
+        data_mapping: RefinementReadinessSummary
+        navigation_rule_refs:
+          - CD-UI-001/SCR-003->SCR-004
+        notes: Bridges the refinement bundle to task synthesis handoff without letting `SCR-003` own task generation itself.

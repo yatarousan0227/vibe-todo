@@ -1,0 +1,29 @@
+brief_id: 001-vibetodo-project-intake
+design_id: 001-vibetodo-project-intake
+common_design_refs:
+  - ref_id: CD-DATA-001
+    kind: data
+    usage: consume
+    notes:
+      - Persist `Project` with `planning_mode` and `lifecycle_status=draft_intake` on first save.
+      - On review confirm, write a confirmed intake snapshot that preserves both structured and free-form inputs for downstream traceability.
+      - Initialize exactly one active `RefinementSession` for the same `project_id`.
+  - ref_id: CD-API-001
+    kind: api
+    usage: consume
+    notes:
+      - Use `POST /api/projects` for both initial draft creation and subsequent resaves; when `projectId` is present, update the same draft context instead of creating a second project.
+      - Use `GET /api/projects/{projectId}/workspace-context` to resume an intake draft and hydrate the review state.
+      - Return lifecycle fields that let `SCR-001` distinguish draft, confirmable, and refinement-ready states.
+  - ref_id: CD-MOD-001
+    kind: module
+    usage: consume
+    notes:
+      - Delegate `SaveProjectDraft` and `InitializeProjectFromIntake` to the application module rather than embedding workflow logic in the screen.
+      - Keep review confirmation as the boundary where project context and session initialization happen atomically.
+  - ref_id: CD-UI-001
+    kind: ui
+    usage: consume
+    notes:
+      - Reuse shared screen `SCR-001 Intake Start` and model the pre-start review as an internal state instead of inventing a new cross-product screen.
+      - Preserve the shared navigation rule that `SCR-001` exits to `SCR-002` only after intake confirmation succeeds.

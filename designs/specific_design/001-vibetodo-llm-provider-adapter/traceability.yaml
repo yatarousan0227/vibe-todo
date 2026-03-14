@@ -1,0 +1,116 @@
+brief_id: 005-vibetodo-llm-provider-adapter
+design_id: 001-vibetodo-llm-provider-adapter
+requirements:
+  - requirement_id: REQ-001
+    summary: 抽象 LLMProvider ポート定義
+    primary_artifact: overview.md
+    related_artifacts:
+      - common-design-refs.yaml
+      - sequence-flows/core-flow.md
+      - ui-fields.yaml
+      - test-design.md
+      - test-plan.md
+    common_design_refs:
+      - CD-MOD-001
+    project_standards:
+      - .specify/project/tech-stack.md
+      - .specify/project/architecture-principles.md
+      - .specify/project/coding-rules.md
+    status: mapped
+
+  - requirement_id: REQ-002
+    summary: OpenAI adapter 実装
+    primary_artifact: overview.md
+    related_artifacts:
+      - common-design-refs.yaml
+      - sequence-flows/core-flow.md
+      - test-design.md
+      - test-plan.md
+    common_design_refs:
+      - CD-API-001
+      - CD-MOD-001
+    project_standards:
+      - .specify/project/tech-stack.md
+      - .specify/project/architecture-principles.md
+      - .specify/project/coding-rules.md
+    status: mapped
+
+  - requirement_id: REQ-003
+    summary: Anthropic adapter 実装
+    primary_artifact: overview.md
+    related_artifacts:
+      - common-design-refs.yaml
+      - sequence-flows/core-flow.md
+      - test-design.md
+      - test-plan.md
+    common_design_refs:
+      - CD-API-001
+      - CD-MOD-001
+    project_standards:
+      - .specify/project/tech-stack.md
+      - .specify/project/architecture-principles.md
+      - .specify/project/coding-rules.md
+    status: mapped
+
+  - requirement_id: REQ-004
+    summary: Azure OpenAI adapter 実装
+    primary_artifact: overview.md
+    related_artifacts:
+      - common-design-refs.yaml
+      - sequence-flows/core-flow.md
+      - test-design.md
+      - test-plan.md
+    common_design_refs:
+      - CD-API-001
+      - CD-MOD-001
+    project_standards:
+      - .specify/project/tech-stack.md
+      - .specify/project/architecture-principles.md
+      - .specify/project/coding-rules.md
+    status: mapped
+
+  - requirement_id: REQ-005
+    summary: 環境変数スキーマ定義
+    primary_artifact: ui-fields.yaml
+    related_artifacts:
+      - overview.md
+      - sequence-flows/core-flow.md
+      - test-design.md
+      - test-plan.md
+    common_design_refs:
+      - none
+    project_standards:
+      - .specify/project/tech-stack.md
+      - .specify/project/architecture-principles.md
+    status: mapped
+
+  - requirement_id: REQ-006
+    summary: プロバイダー factory と起動時バリデーション
+    primary_artifact: sequence-flows/core-flow.md
+    related_artifacts:
+      - overview.md
+      - common-design-refs.yaml
+      - ui-fields.yaml
+      - test-design.md
+      - test-plan.md
+    common_design_refs:
+      - CD-MOD-001
+    project_standards:
+      - .specify/project/tech-stack.md
+      - .specify/project/architecture-principles.md
+      - .specify/project/coding-rules.md
+      - .specify/project/domain-map.md
+    status: mapped
+
+  - requirement_id: REQ-007
+    summary: ローカル Docker 動作確認
+    primary_artifact: overview.md
+    related_artifacts:
+      - ui-fields.yaml
+      - test-design.md
+      - test-plan.md
+    common_design_refs:
+      - none
+    project_standards:
+      - .specify/project/tech-stack.md
+    status: mapped

@@ -1,0 +1,32 @@
+{
+  "name": "vibe-todo",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0 --port 3000",
+    "build": "next build",
+    "start": "next start --hostname 0.0.0.0 --port 3000",
+    "db:migrate": "tsx scripts/init-db.ts",
+    "db:init": "tsx scripts/init-db.ts",
+    "test": "vitest run",
+    "test:integration": "tsx scripts/test-integration.ts",
+    "test:e2e": "tsx scripts/test-e2e.ts"
+  },
+  "dependencies": {
+    "next": "^16.1.6",
+    "pg": "^8.20.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "@types/pg": "^8.18.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "jsdom": "^26.1.0",
+    "playwright": "^1.58.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0"
+  }
+}

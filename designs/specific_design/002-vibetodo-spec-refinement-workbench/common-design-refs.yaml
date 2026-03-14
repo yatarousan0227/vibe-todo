@@ -1,0 +1,31 @@
+brief_id: 002-vibetodo-spec-refinement-workbench
+design_id: 002-vibetodo-spec-refinement-workbench
+common_design_refs:
+  - ref_id: CD-DATA-001
+    kind: data
+    usage: consume
+    notes:
+      - Use `RefinementSession` as the single owner of `active_artifact_key`, latest prompt context, and generation focus for the current `project_id`.
+      - Persist every generate, regenerate, and explicit user edit as an immutable `ArtifactSnapshot` with approval status, current flag, and change reason.
+      - Mark downstream `ArtifactSnapshot` records and the latest `TaskPlanSnapshot` as stale when an upstream approved snapshot changes.
+  - ref_id: CD-API-001
+    kind: api
+    usage: consume
+    notes:
+      - Use `GET /api/projects/{projectId}/workspace-context` to hydrate the sequence rail, approved upstream context, stale dependencies, and readiness gate on both `SCR-002` and `SCR-003`.
+      - Use `POST /api/projects/{projectId}/artifacts/{artifactKey}/generations` for both first draft generation and regeneration, with async job status returned to the UI.
+      - Use `POST /api/projects/{projectId}/artifacts/{artifactKey}/approvals` to record approve or reject decisions on a specific `artifactSnapshotId` with an explicit decision reason.
+  - ref_id: CD-MOD-001
+    kind: module
+    usage: consume
+    notes:
+      - Delegate artifact sequence gating, upstream-context filtering, stale propagation, and retry policy to the shared project planning application module.
+      - Keep approval as a module-owned decision boundary so the UI never auto-approves after generation or user edit.
+      - Treat provider adapters as collaborators behind `RefinementEngine`, not as screen-specific integrations.
+  - ref_id: CD-UI-001
+    kind: ui
+    usage: consume
+    notes:
+      - Reuse `SCR-002 Refinement Loop` as the only artifact drafting workspace and `SCR-003 Artifact Approval` as the only explicit approval boundary.
+      - Preserve the shared navigation rule that the workbench advances to `SCR-004` only after every required artifact is approved and current.
+      - Surface the `SCR-005` feedback loop indirectly through stale impact messaging and refinement-return affordances rather than inventing a separate management screen inside this bundle.

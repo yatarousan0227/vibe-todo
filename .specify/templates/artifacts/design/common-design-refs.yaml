@@ -1,0 +1,13 @@
+brief_id: <brief-id>
+design_id: <design-id>
+common_design_refs:
+  - ref_id: CD-API-001
+    kind: api
+    usage: consume
+    notes:
+      - <feature-specific usage note>
+  - ref_id: CD-UI-001
+    kind: ui
+    usage: consume
+    notes:
+      - <shared screen catalog or navigation rule usage note>

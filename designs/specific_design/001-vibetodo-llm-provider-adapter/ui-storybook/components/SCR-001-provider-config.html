@@ -1,0 +1,165 @@
+<main style="padding: 32px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 860px; margin: 0 auto;">
+  <h1 style="font-size: 20px; font-weight: 600; margin-bottom: 4px; color: #172033;">
+    LLM Provider Configuration
+  </h1>
+  <p style="font-size: 13px; color: #627086; margin-top: 0 margin-bottom: 24px;">
+    design_id: 001-vibetodo-llm-provider-adapter — REQ-005, REQ-006<br>
+    このパネルは UI 画面ではなく、LLMProvider adapter の環境変数スキーマを開発者向けに可視化するものです。
+  </p>
+
+  <section style="margin-top: 24px;">
+    <h2 style="font-size: 15px; font-weight: 600; color: #172033; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
+      プロバイダー選択 (CFG-001)
+    </h2>
+    <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px;">
+      <thead>
+        <tr style="background: #f1f5f9;">
+          <th style="text-align: left; padding: 8px; border: 1px solid #e2e8f0;">変数名</th>
+          <th style="text-align: left; padding: 8px; border: 1px solid #e2e8f0;">必須</th>
+          <th style="text-align: left; padding: 8px; border: 1px solid #e2e8f0;">許容値</th>
+          <th style="text-align: left; padding: 8px; border: 1px solid #e2e8f0;">説明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; font-family: monospace;">LLM_PROVIDER</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; color: #dc2626;">必須</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; font-family: monospace;">openai | anthropic | azure_openai</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;">使用する LLM プロバイダーを選択する。未設定または無効値の場合は起動を中断する。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section style="margin-top: 28px;">
+    <h2 style="font-size: 15px; font-weight: 600; color: #172033; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
+      OpenAI 設定 (CFG-002)  — <span style="font-weight: 400; font-size: 13px; color: #627086;">LLM_PROVIDER=openai のとき有効</span>
+    </h2>
+    <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px;">
+      <thead>
+        <tr style="background: #f1f5f9;">
+          <th style="text-align: left; padding: 8px; border: 1px solid #e2e8f0;">変数名</th>
+          <th style="text-align: left; padding: 8px; border: 1px solid #e2e8f0;">必須</th>
+          <th style="text-align: left; padding: 8px; border: 1px solid #e2e8f0;">デフォルト</th>
+          <th style="text-align: left; padding: 8px; border: 1px solid #e2e8f0;">例 / 説明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; font-family: monospace;">OPENAI_API_KEY</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; color: #dc2626;">必須</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; color: #627086;">—</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;">sk-... 形式の API キー</td>
+        </tr>
+        <tr style="background: #fafafa;">
+          <td style="padding: 8px; border: 1px solid #e2e8f0; font-family: monospace;">OPENAI_MODEL</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; color: #dc2626;">必須</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; color: #627086;">—</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;"><span style="font-family: monospace;">gpt-4o</span></td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; font-family: monospace;">OPENAI_API_BASE_URL</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; color: #059669;">省略可</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; font-family: monospace; font-size: 11px;">https://api.openai.com/v1</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;">proxy や互換 API を使う場合に設定する</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section style="margin-top: 28px;">
+    <h2 style="font-size: 15px; font-weight: 600; color: #172033; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
+      Anthropic 設定 (CFG-003)  — <span style="font-weight: 400; font-size: 13px; color: #627086;">LLM_PROVIDER=anthropic のとき有効</span>
+    </h2>
+    <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px;">
+      <thead>
+        <tr style="background: #f1f5f9;">
+          <th style="text-align: left; padding: 8px; border: 1px solid #e2e8f0;">変数名</th>
+          <th style="text-align: left; padding: 8px; border: 1px solid #e2e8f0;">必須</th>
+          <th style="text-align: left; padding: 8px; border: 1px solid #e2e8f0;">デフォルト</th>
+          <th style="text-align: left; padding: 8px; border: 1px solid #e2e8f0;">例 / 説明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; font-family: monospace;">ANTHROPIC_API_KEY</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; color: #dc2626;">必須</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; color: #627086;">—</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;">sk-ant-... 形式の API キー</td>
+        </tr>
+        <tr style="background: #fafafa;">
+          <td style="padding: 8px; border: 1px solid #e2e8f0; font-family: monospace;">ANTHROPIC_MODEL</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; color: #dc2626;">必須</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; color: #627086;">—</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;"><span style="font-family: monospace;">claude-sonnet-4-6</span></td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; font-family: monospace;">ANTHROPIC_API_BASE_URL</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; color: #059669;">省略可</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; font-family: monospace; font-size: 11px;">https://api.anthropic.com</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;">proxy を使う場合に設定する</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section style="margin-top: 28px;">
+    <h2 style="font-size: 15px; font-weight: 600; color: #172033; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
+      Azure OpenAI 設定 (CFG-004)  — <span style="font-weight: 400; font-size: 13px; color: #627086;">LLM_PROVIDER=azure_openai のとき有効</span>
+    </h2>
+    <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px;">
+      <thead>
+        <tr style="background: #f1f5f9;">
+          <th style="text-align: left; padding: 8px; border: 1px solid #e2e8f0;">変数名</th>
+          <th style="text-align: left; padding: 8px; border: 1px solid #e2e8f0;">必須</th>
+          <th style="text-align: left; padding: 8px; border: 1px solid #e2e8f0;">例 / 説明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; font-family: monospace;">AZURE_OPENAI_API_KEY</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; color: #dc2626;">必須</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;">Azure OpenAI リソースの API キー</td>
+        </tr>
+        <tr style="background: #fafafa;">
+          <td style="padding: 8px; border: 1px solid #e2e8f0; font-family: monospace;">AZURE_OPENAI_ENDPOINT</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; color: #dc2626;">必須</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;"><span style="font-family: monospace;">https://my-resource.openai.azure.com</span></td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; font-family: monospace;">AZURE_OPENAI_DEPLOYMENT_NAME</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; color: #dc2626;">必須</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;"><span style="font-family: monospace;">gpt-4o-deployment</span></td>
+        </tr>
+        <tr style="background: #fafafa;">
+          <td style="padding: 8px; border: 1px solid #e2e8f0; font-family: monospace;">AZURE_OPENAI_API_VERSION</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0; color: #dc2626;">必須</td>
+          <td style="padding: 8px; border: 1px solid #e2e8f0;"><span style="font-family: monospace;">2024-02-01</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section style="margin-top: 32px; padding: 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px;">
+    <h3 style="font-size: 13px; font-weight: 600; margin: 0 0 8px; color: #166534;">LLMProvider Port Contract (REQ-001)</h3>
+    <pre style="margin: 0; font-size: 12px; color: #172033; overflow-x: auto;">interface LLMProvider {
+  generateText(prompt: string, options?: LLMCallOptions): Promise&lt;LLMResult&gt;;
+}
+
+type LLMCallOptions = {
+  maxTokens?: number;
+  temperature?: number;
+};
+
+type LLMResult = {
+  text: string;
+  usage?: { promptTokens: number; completionTokens: number };
+};
+
+type LLMError = {
+  code: "AUTH_ERROR" | "RATE_LIMITED" | "NETWORK_ERROR" | "PROVIDER_ERROR";
+  message: string;
+  providerName: string;
+};</pre>
+  </section>
+</main>

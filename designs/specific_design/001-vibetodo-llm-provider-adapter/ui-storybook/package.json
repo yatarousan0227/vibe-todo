@@ -1,0 +1,13 @@
+{
+  "name": "ui-storybook-design-bundle",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "storybook": "storybook dev -p 6006 --ci",
+    "build-storybook": "storybook build"
+  },
+  "devDependencies": {
+    "storybook": "9.1.20",
+    "@storybook/html-vite": "9.1.20"
+  }
+}

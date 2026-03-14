@@ -1,0 +1,13 @@
+{
+  "name": "002-vibetodo-spec-refinement-workbench-ui-storybook",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "storybook": "storybook dev -p 6006 --ci",
+    "build-storybook": "storybook build"
+  },
+  "devDependencies": {
+    "@storybook/html-vite": "9.1.20",
+    "storybook": "9.1.20"
+  }
+}

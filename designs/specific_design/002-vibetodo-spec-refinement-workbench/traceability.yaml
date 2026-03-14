@@ -1,0 +1,116 @@
+brief_id: 002-vibetodo-spec-refinement-workbench
+design_id: 002-vibetodo-spec-refinement-workbench
+requirements:
+  - requirement_id: REQ-001
+    primary_artifact: overview.md
+    related_artifacts:
+      - ui-fields.yaml
+      - sequence-flows/core-flow.md
+      - test-design.md
+      - test-plan.md
+    common_design_refs:
+      - CD-DATA-001
+      - CD-MOD-001
+      - CD-UI-001
+    project_standards:
+      - .specify/project/tech-stack.md
+      - .specify/project/architecture-principles.md
+      - .specify/project/coding-rules.md
+      - .specify/project/domain-map.md
+    status: mapped
+  - requirement_id: REQ-002
+    primary_artifact: ui-fields.yaml
+    related_artifacts:
+      - overview.md
+      - sequence-flows/core-flow.md
+      - test-design.md
+      - ui-storybook/stories/SCR-001-example.stories.js
+    common_design_refs:
+      - CD-API-001
+      - CD-DATA-001
+      - CD-UI-001
+    project_standards:
+      - .specify/project/architecture-principles.md
+      - .specify/project/coding-rules.md
+      - .specify/project/domain-map.md
+    status: mapped
+  - requirement_id: REQ-003
+    primary_artifact: sequence-flows/core-flow.md
+    related_artifacts:
+      - overview.md
+      - ui-fields.yaml
+      - common-design-refs.yaml
+      - test-design.md
+    common_design_refs:
+      - CD-API-001
+      - CD-MOD-001
+      - CD-DATA-001
+    project_standards:
+      - .specify/project/tech-stack.md
+      - .specify/project/architecture-principles.md
+      - .specify/project/coding-rules.md
+      - .specify/project/domain-map.md
+    status: mapped
+  - requirement_id: REQ-004
+    primary_artifact: sequence-flows/core-flow.md
+    related_artifacts:
+      - common-design-refs.yaml
+      - batch-design.md
+      - test-design.md
+      - test-plan.md
+    common_design_refs:
+      - CD-DATA-001
+      - CD-API-001
+      - CD-MOD-001
+    project_standards:
+      - .specify/project/tech-stack.md
+      - .specify/project/architecture-principles.md
+      - .specify/project/coding-rules.md
+    status: mapped
+  - requirement_id: REQ-005
+    primary_artifact: overview.md
+    related_artifacts:
+      - ui-fields.yaml
+      - sequence-flows/core-flow.md
+      - test-design.md
+      - test-plan.md
+    common_design_refs:
+      - CD-DATA-001
+      - CD-MOD-001
+      - CD-UI-001
+    project_standards:
+      - .specify/project/architecture-principles.md
+      - .specify/project/coding-rules.md
+      - .specify/project/domain-map.md
+    status: mapped
+  - requirement_id: REQ-006
+    primary_artifact: common-design-refs.yaml
+    related_artifacts:
+      - overview.md
+      - sequence-flows/core-flow.md
+      - batch-design.md
+      - test-design.md
+    common_design_refs:
+      - CD-API-001
+      - CD-MOD-001
+    project_standards:
+      - .specify/project/tech-stack.md
+      - .specify/project/architecture-principles.md
+      - .specify/project/coding-rules.md
+    status: mapped
+  - requirement_id: REQ-007
+    primary_artifact: batch-design.md
+    related_artifacts:
+      - ui-fields.yaml
+      - sequence-flows/core-flow.md
+      - test-design.md
+      - test-plan.md
+    common_design_refs:
+      - CD-API-001
+      - CD-MOD-001
+      - CD-DATA-001
+    project_standards:
+      - .specify/project/tech-stack.md
+      - .specify/project/architecture-principles.md
+      - .specify/project/coding-rules.md
+    status: mapped
