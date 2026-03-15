@@ -108,6 +108,7 @@
 - boundary_cases:
   - a retry succeeds after one failure and the audit trail still links both attempts to the same artifact key
   - multiple generation jobs for different artifacts do not cross-report status into the active artifact rail
+  - the "Draft all remaining" batch action shows the artifact name and ordinal position within the batch before each generation call, not just a spinner-only state
 - references:
   - ui-fields.yaml
   - batch-design.md

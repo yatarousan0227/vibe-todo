@@ -391,6 +391,51 @@
 - notes:
   - 106 tests passed, 0 failures. 14 test files executed. All REQ-001 through REQ-007 categories have unit test coverage. Non-software planning scenario (community festival event, not software delivery) confirmed in engine.test.ts.
 
+### TASK-008 Fix batch draft-all progress visibility
+- requirement_ids:
+  - REQ-007
+- artifact_refs:
+  - batch-design.md
+  - test-design.md
+- common_design_refs:
+  - CD-UI-001
+- depends_on:
+  - TASK-005
+- implementation_notes:
+  - `handleDraftAll` iterated artifact summaries sequentially while showing only a generic "Working…" spinner, making it impossible to tell how far batch generation had progressed or whether it had stalled.
+  - Fix: filter ungenerated summaries into `toGenerate`, set `statusMessage` before each `postGeneration` call using the `draftAllProgress` i18n template (includes ordinal, total count, and artifact label), clear it to the completion message when all generations succeed.
+  - Add `draftAllProgress` key to both `en` and `ja` i18n dictionaries.
+
+#### Execution Status
+- status: done
+- owner: claude-sonnet-4-6
+- last_updated: 2026-03-15
+
+#### Checklist
+- [x] implement code
+- [x] add or update tests
+- [x] run local verification
+- [x] review diff
+
+#### Implementation Log
+- 2026-03-15: Added `draftAllProgress` i18n key to both `en` and `ja` `refinement` sections in `src/lib/i18n.ts` with `{current}`, `{total}`, `{label}` placeholders.
+- 2026-03-15: Refactored `handleDraftAll` in `src/components/refinement-workbench.tsx` to: clear `statusMessage` at start, build `toGenerate` list by filtering summaries without a current snapshot, call `setStatusMessage` with the formatted `draftAllProgress` template before each `postGeneration`, and set final `statusDraftedAll` message on success.
+- 2026-03-15: Added three tests to `src/components/refinement-workbench.test.tsx`: initial render has no status note, both locale `draftAllProgress` templates contain all three placeholders, and formatted template correctly substitutes artifact label.
+
+#### Changed Files
+- src/lib/i18n.ts
+- src/components/refinement-workbench.tsx
+- src/components/refinement-workbench.test.tsx
+- designs/specific_design/002-vibetodo-spec-refinement-workbench/test-design.md
+- designs/specific_design/002-vibetodo-spec-refinement-workbench/tasks.md
+
+#### Verification Results
+- status: passed
+- commands:
+  - npm test
+- notes:
+  - 274 tests passed, 0 failures.
+
 ## Dependency Order
 - TASK-001
 - TASK-002
@@ -399,6 +444,7 @@
 - TASK-005
 - TASK-006
 - TASK-007
+- TASK-008
 
 ## Test References
 - REQ-001 -> test-design.md / test-plan.md

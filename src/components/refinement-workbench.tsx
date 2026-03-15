@@ -157,13 +157,19 @@ export function RefinementWorkbench(props: RefinementWorkbenchProps) {
   async function handleDraftAll() {
     setIsBusy(true);
     setErrorMessage("");
+    setStatusMessage("");
+    const toGenerate = artifactSummaries.filter((s) => !s.currentSnapshotId);
     try {
-      for (const summary of artifactSummaries) {
-        if (summary.currentSnapshotId) {
-          continue;
-        }
+      for (let i = 0; i < toGenerate.length; i++) {
+        const label = getArtifactLabel(locale, toGenerate[i].artifactKey);
+        setStatusMessage(
+          dict.refinement.draftAllProgress
+            .replace("{current}", String(i + 1))
+            .replace("{total}", String(toGenerate.length))
+            .replace("{label}", label),
+        );
         await postGeneration({
-          artifactKey: summary.artifactKey,
+          artifactKey: toGenerate[i].artifactKey,
           generationTrigger: "generate",
         });
       }
